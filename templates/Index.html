@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>AI Stock Price Predictor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <!-- ======== NAVBAR ======== -->
+  <header class="navbar">
+    <div class="logo">📈 AI Stock Predictor</div>
+    <nav>
+      <a href="#">Home</a>
+      <a href="#">About</a>
+      <a href="#">Docs</a>
+      <a href="#">Contact</a>
+    </nav>
+  </header>
+
+  <!-- ======== HERO SECTION ======== -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Predict Stock Prices with AI</h1>
+      <p>Using deep learning (LSTM) and machine learning, this tool forecasts stock price movements for your selected time period. Just choose the duration and prediction days!</p>
+    </div>
+  </section>
+
+  <!-- ======== MAIN CONTAINER ======== -->
+  <div class="container">
+    <div class="form-card">
+      <h2>🔮 Select Time Duration</h2>
+      <form id="predictForm">
+        <div class="form-group">
+          <label>History Period (e.g. 1y, 5y)</label>
+          <input id="period" name="period" type="text" value="1y">
+        </div>
+        <div class="form-group">
+          <label>Forecast Horizon (days)</label>
+          <input id="horizon" name="horizon" type="number" value="5" min="1" max="60">
+        </div>
+        <button type="submit" class="btn-primary">Predict Now</button>
+      </form>
+    </div>
+
+    <div class="results">
+      <h2>📊 Prediction Results</h2>
+      <canvas id="priceChart" width="900" height="400"></canvas>
+      <div id="predTable"></div>
+    </div>
+  </div>
+
+  <!-- ======== FOOTER ======== -->
+  <footer>
+    <p>© 2025 AI Stock Predictor | Powered by Flask, TensorFlow & Chart.js</p>
+  </footer>
+
+  <!-- ======== SCRIPT ======== -->
+  <script>
+    const form = document.getElementById('predictForm');
+    const ctx = document.getElementById('priceChart').getContext('2d');
+    let chart;
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      document.querySelector(".btn-primary").innerText = "⏳ Predicting...";
+
+      const period = document.getElementById('period').value;
+      const horizon = document.getElementById('horizon').value;
+
+      const res = await fetch('/predict', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ period, horizon })
+      });
+
+      document.querySelector(".btn-primary").innerText = "Predict Now";
+
+      if (!res.ok) {
+        const err = await res.json();
+        alert("Error: " + (err.error || res.statusText));
+        return;
+      }
+
+      const data = await res.json();
+      const hist_dates = data.historic.dates;
+      const hist_prices = data.historic.prices;
+      const preds = data.predictions.predicted_prices;
+
+      const lastDate = new Date(hist_dates[hist_dates.length - 1]);
+      const pred_dates = [];
+      for (let i = 1; i <= preds.length; i++) {
+        const d = new Date(lastDate);
+        d.setDate(d.getDate() + i);
+        pred_dates.push(d.toISOString().split('T')[0]);
+      }
+
+      const all_labels = hist_dates.concat(pred_dates);
+
+      if (chart) chart.destroy();
+      chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: all_labels,
+          datasets: [
+            {
+              label: 'Actual Prices',
+              data: hist_prices,
+              borderColor: '#007bff',
+              fill: false,
+              tension: 0.25
+            },
+            {
+              label: 'Predicted Prices',
+              data: Array(hist_prices.length - 0).fill(null).concat(preds),
+              borderColor: '#ff9800',
+              borderDash: [6, 6],
+              fill: false,
+              tension: 0.25
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: 'top' },
+          },
+          scales: {
+            x: { display: true },
+            y: { display: true }
+          }
+        }
+      });
+
+      // Prediction Table
+      const tableDiv = document.getElementById('predTable');
+      let html = `<h3>Predicted Future Prices</h3><table><tr><th>Date</th><th>Predicted Close</th></tr>`;
+      for (let i = 0; i < preds.length; i++) {
+        html += `<tr><td>${pred_dates[i]}</td><td>${preds[i].toFixed(2)}</td></tr>`;
+      }
+      html += `</table>`;
+      tableDiv.innerHTML = html;
+    });
+  </script>
+</body>
+  </html>
