@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Docs | AI Stock Predictor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="navbar">
+    <div class="logo">📈 AI Stock Predictor</div>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/about">About</a>
+      <a href="/docs" class="active">Docs</a>
+      <a href="/contact">Contact</a>
+    </nav>
+  </header>
+
+  <section class="page-header">
+    <h1>Documentation</h1>
+  </section>
+
+  <div class="page-content">
+    <h2>Usage Guide</h2>
+    <ol>
+      <li>Open the <b>Home</b> page.</li>
+      <li>Select a <b>history period</b> (e.g., 1y for one year of data).</li>
+      <li>Enter the <b>forecast horizon</b> (e.g., 7 days).</li>
+      <li>Click <b>Predict Now</b> to generate results.</li>
+      <li>View visualized data and predicted future prices.</li>
+    </ol>
+
+    <h2>Backend Overview</h2>
+    <p>
+      The system retrieves stock data using <code>yfinance</code> or a dataset,
+      scales values with <code>MinMaxScaler</code>, trains an <b>LSTM</b> model in TensorFlow,
+      and predicts the next N closing prices.
+    </p>
+
+    <h2>Frontend Features</h2>
+    <ul>
+      <li>Dynamic charts using Chart.js</li>
+      <li>Clean responsive design with CSS3</li>
+      <li>Instant feedback with AJAX-based prediction</li>
+    </ul>
+
+    <h2>Model Architecture</h2>
+    <p>
+      The deep learning model uses:
+      <ul>
+        <li>2 LSTM layers (64 units each)</li>
+        <li>Dropout regularization</li>
+        <li>Dense output layer (1 neuron for closing price)</li>
+      </ul>
+    </p>
+  </div>
+
+  <footer>
+    <p>© 2025 AI Stock Predictor</p>
+  </footer>
+</body>
+</html>
